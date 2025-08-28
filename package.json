@@ -11,9 +11,9 @@
   "author": "yiskang <eason.kang@autodesk.com>",
   "license": "MIT",
   "dependencies": {
+    "@aps_sdk/authentication": "^1.0.0",
     "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "forge-apis": "^0.9.10"
+    "express": "^4.19.2"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.6",

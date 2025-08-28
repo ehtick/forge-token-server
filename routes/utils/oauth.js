@@ -16,9 +16,10 @@
 // UNINTERRUPTED OR ERROR FREE.
 /////////////////////////////////////////////////////////////////////
 
-const { AuthClientTwoLeggedV2 } = require( 'forge-apis' );
+const { AuthenticationClient, Scopes } = require('@aps_sdk/authentication');
 
 const config = require( '../../config' );
+const authenticationClient = new AuthenticationClient();
 
 /**
  * Initializes a APS client for 2-legged authentication.
@@ -30,14 +31,42 @@ function getClient(scopes) {
   return new AuthClientTwoLeggedV2( client_id, client_secret, scopes || config.scopes.internal );
 }
 
+function getScopeEnum(scopeString) {
+  const reverseScopeMap = {
+    "user:read": Scopes.UserRead,
+    "user:write": Scopes.UserWrite,
+    "user-profile:read": Scopes.UserProfileRead,
+    "viewables:read": Scopes.ViewablesRead,
+    "data:read": Scopes.DataRead,
+    "data:write": Scopes.DataWrite,
+    "data:create": Scopes.DataCreate,
+    "data:search": Scopes.DataSearch,
+    "bucket:create": Scopes.BucketCreate,
+    "bucket:read": Scopes.BucketRead,
+    "bucket:update": Scopes.BucketUpdate,
+    "bucket:delete": Scopes.BucketDelete,
+    "code:all": Scopes.CodeAll,
+    "account:read": Scopes.AccountRead,
+    "account:write": Scopes.AccountWrite,
+    "openid": Scopes.OpenId
+  };
+  return reverseScopeMap[scopeString] || null;
+}
+
 let cache = {};
 async function getToken( scopes ) {
   const key = scopes.join( '+' );
   if( cache[key] ) {
     return cache[key];
   }
-  const client = getClient( scopes );
-  let credentials = await client.authenticate();
+
+  const { client_id, client_secret } = config.credentials;
+  const scopeEnums = scopes.map( getScopeEnum ).filter( s => s !== null );
+  let credentials = await authenticationClient.getTwoLeggedToken(
+    client_id,
+    client_secret,
+    scopeEnums
+  );
   cache[key] = credentials;
   setTimeout( () => { delete cache[key]; }, credentials.expires_in * 1000 );
   return credentials;
